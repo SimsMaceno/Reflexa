@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflexa - Diário Emocional</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#E6E6FA',secondary:'#E0FFFF'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+background-color: #FFFFFF;
+color: #4A4A4A;
+}
+h1, h2, h3, h4, h5, h6 {
+font-family: 'Montserrat', sans-serif;
+font-weight: 300;
+}
+.app-logo {
+font-family: 'Pacifico', serif;
+color: #4A4A4A;
+}
+.textarea-container {
+background-color: white;
+background-image:
+linear-gradient(#F5F5F5 1px, transparent 1px),
+linear-gradient(90deg, #F5F5F5 1px, transparent 1px);
+background-size: 20px 20px;
+background-position: -1px -1px;
+}
+.cursor {
+display: inline-block;
+width: 2px;
+height: 24px;
+background-color: #4A4A4A;
+animation: blink 1s infinite;
+}
+@keyframes blink {
+0%, 100% { opacity: 1; }
+50% { opacity: 0; }
+}
+input:focus, textarea:focus, select:focus, button:focus {
+outline: none;
+}
+.custom-switch {
+position: relative;
+display: inline-block;
+width: 50px;
+height: 24px;
+}
+.custom-switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #E0E0E0;
+transition: .4s;
+border-radius: 24px;
+}
+.slider:before {
+position: absolute;
+content: "";
+height: 18px;
+width: 18px;
+left: 3px;
+bottom: 3px;
+background-color: white;
+transition: .4s;
+border-radius: 50%;
+}
+input:checked + .slider {
+background-color: #E6E6FA;
+}
+input:checked + .slider:before {
+transform: translateX(26px);
+}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="px-6 py-4 border-b border-gray-100">
+<div class="flex justify-between items-center">
+<div class="app-logo text-2xl">Reflexa</div>
+<div class="flex items-center space-x-4">
+<div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary/20">
+<i class="ri-notification-3-line text-gray-600"></i>
+</div>
+<div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary/20">
+<i class="ri-settings-3-line text-gray-600"></i>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 px-6 py-6 max-w-3xl mx-auto w-full">
+<div class="mb-8">
+<p class="text-sm text-gray-500">12 de Abril, 2025 • Sábado</p>
+<h1 class="text-2xl font-light mt-2">Como você está se sentindo hoje?</h1>
+</div>
+<div class="textarea-container border border-gray-200 rounded-xl p-5 mb-6 min-h-[200px] relative">
+<p class="text-gray-400 absolute pointer-events-none">Comece a escrever aqui...</p>
+<div class="cursor mt-1"></div>
+</div>
+<div class="flex space-x-4 mb-10">
+<button class="flex-1 bg-primary text-gray-700 py-3 px-6 rounded-button font-medium shadow-sm hover:shadow-md transition-all whitespace-nowrap">
+<i class="ri-mental-health-line mr-2"></i>Refletir
+</button>
+<button class="flex-1 bg-secondary text-gray-700 py-3 px-6 rounded-button font-medium shadow-sm hover:shadow-md transition-all whitespace-nowrap">
+<i class="ri-save-line mr-2"></i>Salvar
+</button>
+<div class="flex-1">
+  <button id="audioButton" class="w-full bg-[#FFDAB9] text-gray-700 py-3 px-6 rounded-button font-medium shadow-sm hover:shadow-md transition-all whitespace-nowrap">
+    <i class="ri-volume-up-line mr-2"></i>
+    <span id="buttonText">Ouvir Resposta</span>
+  </button>
+  <div id="audioControls" class="hidden mt-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center">
+          <i id="volumeIcon" class="ri-volume-up-line text-gray-600 cursor-pointer"></i>
+        </div>
+        <input type="range" id="volumeSlider" class="w-24 h-1 mx-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="100">
+      </div>
+      <select id="speedControl" class="bg-gray-50 text-sm px-2 py-1 rounded-md border-none">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="flex-1 h-1 bg-gray-200 rounded-full">
+        <div id="progressBar" class="h-full w-0 bg-[#FFDAB9] rounded-full transition-all"></div>
+      </div>
+      <span id="timeDisplay" class="text-xs text-gray-500 min-w-[60px] text-right">0:00</span>
+    </div>
+  </div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+<h2 class="text-xl font-light mb-4">Seu humor hoje</h2>
+<div class="flex">
+<div class="w-1/3">
+<div id="emotionChart" class="h-[150px]"></div>
+</div>
+<div class="w-2/3 pl-6 flex flex-col justify-center">
+<p class="text-lg mb-3">Hoje você se sentiu:</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-primary/20 rounded-full text-sm">Calmo</span>
+<span class="px-3 py-1 bg-[#FFDAB9]/30 rounded-full text-sm">Grato</span>
+<span class="px-3 py-1 bg-[#FFD6D6]/30 rounded-full text-sm">Ansioso</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<h2 class="text-xl font-light mb-4">Insights</h2>
+<div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-5 border border-gray-100 shadow-sm">
+<div class="flex items-start">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-[#FFDAB9]/30 mr-4">
+<i class="ri-lightbulb-line text-[#FF9B50]"></i>
+</div>
+<div>
+<h3 class="font-medium mb-1">Padrão identificado</h3>
+<p class="text-gray-600">Você tende a se sentir ansioso nas segundas-feiras. Considere preparar atividades relaxantes para o início da semana.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<h2 class="text-xl font-light mb-4">Configurações rápidas</h2>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary/20 mr-3">
+<i class="ri-notification-line text-gray-600"></i>
+</div>
+<span>Lembretes diários</span>
+</div>
+<label class="custom-switch">
+<input type="checkbox" checked>
+<span class="slider"></span>
+</label>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary/20 mr-3">
+<i class="ri-moon-line text-gray-600"></i>
+</div>
+<span>Modo noturno</span>
+</div>
+<label class="custom-switch">
+<input type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+</div>
+</div>
+</main>
+<footer class="border-t border-gray-100 py-4">
+<div class="flex justify-around max-w-md mx-auto">
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary/20">
+<i class="ri-home-5-line text-gray-700"></i>
+</div>
+<span class="text-xs mt-1">Início</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 flex items-center justify-center rounded-full">
+<i class="ri-calendar-line text-gray-500"></i>
+</div>
+<span class="text-xs mt-1 text-gray-500">Histórico</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 flex items-center justify-center rounded-full">
+<i class="ri-bar-chart-line text-gray-500"></i>
+</div>
+<span class="text-xs mt-1 text-gray-500">Análises</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 flex items-center justify-center rounded-full">
+<i class="ri-user-line text-gray-500"></i>
+</div>
+<span class="text-xs mt-1 text-gray-500">Perfil</span>
+</div>
+</div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const audioButton = document.getElementById('audioButton');
+const audioControls = document.getElementById('audioControls');
+const buttonText = document.getElementById('buttonText');
+const volumeSlider = document.getElementById('volumeSlider');
+const speedControl = document.getElementById('speedControl');
+const progressBar = document.getElementById('progressBar');
+const timeDisplay = document.getElementById('timeDisplay');
+const volumeIcon = document.getElementById('volumeIcon');
+let isPlaying = false;
+let audio = null;
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+function toggleAudio() {
+  if (!audio) {
+    audio = new Audio('https://example.com/audio.mp3');
+    audio.addEventListener('timeupdate', () => {
+      const progress = (audio.currentTime / audio.duration) * 100;
+      progressBar.style.width = `${progress}%`;
+      timeDisplay.textContent = formatTime(audio.currentTime);
+    });
+    
+    audio.addEventListener('ended', () => {
+      isPlaying = false;
+      buttonText.textContent = 'Ouvir Resposta';
+      audioControls.classList.add('hidden');
+    });
+  }
+  if (isPlaying) {
+    audio.pause();
+    buttonText.textContent = 'Ouvir Resposta';
+    isPlaying = false;
+  } else {
+    audio.play();
+    buttonText.textContent = 'Pausar';
+    audioControls.classList.remove('hidden');
+    isPlaying = true;
+  }
+}
+audioButton.addEventListener('click', toggleAudio);
+volumeSlider.addEventListener('input', (e) => {
+  if (audio) {
+    audio.volume = e.target.value / 100;
+    if (audio.volume === 0) {
+      volumeIcon.className = 'ri-volume-mute-line text-gray-600 cursor-pointer';
+    } else {
+      volumeIcon.className = 'ri-volume-up-line text-gray-600 cursor-pointer';
+    }
+  }
+});
+volumeIcon.addEventListener('click', () => {
+  if (audio) {
+    if (audio.volume > 0) {
+      audio.volume = 0;
+      volumeSlider.value = 0;
+      volumeIcon.className = 'ri-volume-mute-line text-gray-600 cursor-pointer';
+    } else {
+      audio.volume = 1;
+      volumeSlider.value = 100;
+      volumeIcon.className = 'ri-volume-up-line text-gray-600 cursor-pointer';
+    }
+  }
+});
+speedControl.addEventListener('change', (e) => {
+  if (audio) {
+    audio.playbackRate = parseFloat(e.target.value);
+  }
+});
+const emotionChart = echarts.init(document.getElementById('emotionChart'));
+const option = {
+animation: false,
+series: [{
+type: 'pie',
+radius: ['40%', '70%'],
+avoidLabelOverlap: false,
+itemStyle: {
+borderRadius: 8,
+borderColor: '#fff',
+borderWidth: 2
+},
+label: {
+show: false
+},
+emphasis: {
+label: {
+show: false
+}
+},
+data: [
+{ value: 50, name: 'Calmo', itemStyle: { color: 'rgba(87, 181, 231, 1)' } },
+{ value: 30, name: 'Grato', itemStyle: { color: 'rgba(141, 211, 199, 1)' } },
+{ value: 20, name: 'Ansioso', itemStyle: { color: 'rgba(252, 141, 98, 1)' } }
+]
+}]
+};
+emotionChart.setOption(option);
+window.addEventListener('resize', function() {
+emotionChart.resize();
+});
+});
+</script>
+</body>
+</html>
